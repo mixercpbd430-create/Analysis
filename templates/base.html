@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Giáo trình đào tạo 42 phương pháp phân tích - Analysis Methods Training. Focus Improvement, Early Management, Planned Maintenance, SHE.">
+    <title>{% block title %}Giáo Trình 42 Phương Pháp Phân Tích{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+        <a href="{{ url_for('index') }}" class="navbar__brand">
+            <span class="logo-icon">PA</span>
+            <span>42 Phương Pháp Phân Tích</span>
+        </a>
+        <div class="navbar__nav">
+            <a href="{{ url_for('index') }}" class="navbar__link {% if request.endpoint == 'index' %}navbar__link--active{% endif %}">Trang chủ</a>
+            <a href="{{ url_for('method', method_id=1) }}" class="navbar__link {% if request.endpoint == 'method' %}navbar__link--active{% endif %}">Bắt đầu học</a>
+            <a href="{{ url_for('dictionary') }}" class="navbar__link {% if request.endpoint == 'dictionary' %}navbar__link--active{% endif %}">📖 Từ điển TPM</a>
+            {% if session.get('logged_in') %}
+            <a href="{{ url_for('logout') }}" class="navbar__link" style="color: var(--danger); margin-left: 8px;">🚪 Đăng xuất</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Giáo Trình 42 Phương Pháp Phân Tích — Đào tạo nội bộ 📊</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

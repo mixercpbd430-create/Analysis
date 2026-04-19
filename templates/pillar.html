@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ pillar_name }} — Giáo Trình Phân Tích{% endblock %}
+
+{% block content %}
+<section class="hero hero--small">
+    <h1 class="hero__title">
+        <span class="gradient-text">{{ pillar_name }}</span>
+    </h1>
+    <p class="hero__subtitle">
+        {{ pillars[pillar_name].description if pillar_name in pillars else '' }}
+    </p>
+</section>
+
+<section class="chapters-section">
+    <div class="chapters-grid">
+        {% for m in methods %}
+        <a href="{{ url_for('method', method_id=m.id) }}" class="chapter-card" style="animation-delay: {{ loop.index0 * 0.08 }}s">
+            <div class="chapter-card__header">
+                <div class="chapter-card__icon">{{ m.icon }}</div>
+            </div>
+            <div class="chapter-card__number">Phương pháp {{ m.id }}</div>
+            <div class="chapter-card__title">{{ m.short_name }}</div>
+            <div class="chapter-card__desc">{{ m.description }}</div>
+            <div class="chapter-card__arrow">Xem chi tiết →</div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+{% block title %}Từ điển TPM — 316 Thuật ngữ{% endblock %}
+
+{% block content %}
+<div class="dict-page">
+    <!-- Hero Header -->
+    <div class="dict-hero">
+        <h1 class="dict-hero__title">📖 Từ điển TPM</h1>
+        <p class="dict-hero__subtitle">{{ all_terms | length }} thuật ngữ chuyên ngành — Trích xuất từ TPM APK 5.5.2021</p>
+
+        <!-- Search Bar -->
+        <form class="dict-search" method="GET" action="{{ url_for('dictionary') }}">
+            <div class="dict-search__bar">
+                <span class="dict-search__icon">🔍</span>
+                <input type="text" name="q" class="dict-search__input"
+                       placeholder="Tìm thuật ngữ... (VD: OEE, Kaizen, Breakdown, MTBF...)"
+                       value="{{ search_q }}" autocomplete="off" autofocus>
+                <a href="#" class="dict-search__clear" title="Xóa bộ lọc" style="display:none">✕</a>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="dict-cats">
+                <a href="{{ url_for('dictionary', q=search_q) }}"
+                   class="dict-cats__btn {% if not search_cat %}dict-cats__btn--active{% endif %}">
+                    Tất cả <span class="dict-cats__count">{{ all_terms | length }}</span>
+                </a>
+                {% for cat in categories %}
+                <a href="{{ url_for('dictionary', q=search_q, cat=cat) }}"
+                   class="dict-cats__btn {% if search_cat == cat %}dict-cats__btn--active{% endif %}">
+                    {{ cat }}
+                    <span class="dict-cats__count">{{ all_terms | selectattr('category', 'equalto', cat) | list | length }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Results count -->
+    <div class="dict-results-info">
+        {% if search_q or search_cat %}
+        <p>Tìm thấy <strong>{{ terms | length }}</strong> thuật ngữ
+            {% if search_q %}cho "{{ search_q }}"{% endif %}
+            {% if search_cat %}trong danh mục <strong>{{ search_cat }}</strong>{% endif %}
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Terms Grid -->
+    <div class="dict-grid">
+        {% for term in terms %}
+        <div class="dict-card" style="animation-delay: {{ loop.index0 * 0.02 }}s">
+            <div class="dict-card__header" onclick="this.parentElement.classList.toggle('dict-card--open')">
+                <div class="dict-card__term">
+                    <span class="dict-card__cat-dot dict-card__cat-dot--{{ term.category | lower }}"></span>
+                    {{ term.term }}
+                </div>
+                <div class="dict-card__meta">
+                    <span class="dict-card__cat-badge">{{ term.category }}</span>
+                    <span class="dict-card__toggle">▼</span>
+                </div>
+            </div>
+            <div class="dict-card__body">
+                {% if term.subtitle %}
+                <div class="dict-card__subtitle">{{ term.subtitle }}</div>
+                {% endif %}
+                <div class="dict-card__def">{{ term.definition }}</div>
+                {% if term.id in infographic_map %}
+                <div class="dict-card__infographic">
+                    <img src="{{ url_for('static', filename='images/tpm_infographics/' ~ infographic_map[term.id]) }}"
+                         alt="Infographic: {{ term.term }}" loading="lazy">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if terms | length == 0 %}
+        <div class="dict-empty">
+            <div class="dict-empty__icon">🔍</div>
+            <p>Không tìm thấy thuật ngữ nào cho "{{ search_q }}"</p>
+            <a href="{{ url_for('dictionary') }}" class="dict-empty__link">Xem tất cả thuật ngữ</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* ======================== DICTIONARY PAGE ======================== */
+.dict-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+.dict-hero {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+}
+.dict-hero__title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+.dict-hero__subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+/* Search Bar */
+.dict-search {
+    max-width: 700px;
+    margin: 1.5rem auto 0;
+}
+.dict-search__bar {
+    display: flex;
+    align-items: center;
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(56, 189, 248, 0.2);
+    border-radius: 16px;
+    padding: 0 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.dict-search__bar:focus-within {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+}
+.dict-search__icon {
+    font-size: 1.3rem;
+    margin-right: 0.5rem;
+}
+.dict-search__input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    font-size: 1.05rem;
+    padding: 0.9rem 0;
+    outline: none;
+}
+.dict-search__input::placeholder {
+    color: #64748b;
+}
+.dict-search__clear {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+}
+.dict-search__clear:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+/* Category Filter */
+.dict-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+.dict-cats__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    font-size: 0.78rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.dict-cats__btn:hover {
+    border-color: #38bdf8;
+    color: #e2e8f0;
+}
+.dict-cats__btn--active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    font-weight: 600;
+}
+.dict-cats__count {
+    font-size: 0.7rem;
+    background: rgba(148, 163, 184, 0.15);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+}
+
+/* Results Info */
+.dict-results-info {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin: 1rem 0;
+}
+.dict-results-info strong {
+    color: #38bdf8;
+}
+
+/* Terms Grid */
+.dict-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Term Card */
+.dict-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fadeInUp 0.4s ease-out both;
+}
+.dict-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+}
+.dict-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    user-select: none;
+}
+.dict-card__header:hover {
+    background: rgba(56, 189, 248, 0.05);
+}
+.dict-card__term {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.dict-card__cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #64748b;
+}
+.dict-card__cat-dot--am { background: #22c55e; }
+.dict-card__cat-dot--pm { background: #3b82f6; }
+.dict-card__cat-dot--fi { background: #f97316; }
+.dict-card__cat-dot--qm { background: #a855f7; }
+.dict-card__cat-dot--em { background: #8b5cf6; }
+.dict-card__cat-dot--she { background: #ef4444; }
+.dict-card__cat-dot--et { background: #14b8a6; }
+.dict-card__cat-dot--oi { background: #ec4899; }
+.dict-card__cat-dot--oee { background: #eab308; }
+.dict-card__cat-dot--loss { background: #f87171; }
+.dict-card__cat-dot--analysis { background: #38bdf8; }
+.dict-card__cat-dot--tpm { background: #fbbf24; }
+.dict-card__cat-dot--lean { background: #34d399; }
+.dict-card__cat-dot--5s { background: #a78bfa; }
+.dict-card__cat-dot--maintenance { background: #60a5fa; }
+.dict-card__cat-dot--kpi { background: #fb923c; }
+.dict-card__cat-dot--general { background: #64748b; }
+
+.dict-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.dict-card__cat-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    font-weight: 500;
+}
+.dict-card__toggle {
+    color: #64748b;
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+}
+.dict-card--open .dict-card__toggle {
+    transform: rotate(180deg);
+}
+
+/* Card Body */
+.dict-card__body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out, padding 0.3s;
+}
+.dict-card--open .dict-card__body {
+    max-height: 2000px;
+    padding: 0 1.2rem 1rem;
+}
+.dict-card__subtitle {
+    color: #38bdf8;
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.5rem;
+}
+.dict-card__def {
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* Infographic */
+.dict-card__infographic img {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    transition: transform 0.3s;
+}
+.dict-card__infographic img:hover {
+    transform: scale(1.02);
+}
+.dict-card__infographic-note {
+    text-align: center;
+    color: #475569;
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+    font-style: italic;
+}
+
+/* Empty State */
+.dict-empty {
+    text-align: center;
+    padding: 3rem;
+    color: #64748b;
+}
+.dict-empty__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+.dict-empty__link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid #38bdf8;
+    border-radius: 8px;
+    color: #38bdf8;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.dict-empty__link:hover {
+    background: rgba(56, 189, 248, 0.25);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dict-hero__title { font-size: 1.6rem; }
+    .dict-page { padding: 1rem; }
+    .dict-card__header { padding: 0.6rem 0.8rem; }
+    .dict-card__term { font-size: 0.85rem; }
+}
+</style>
+
+<script>
+// Client-side live filtering (no page reload)
+const searchInput = document.querySelector('.dict-search__input');
+const cards = document.querySelectorAll('.dict-card');
+const resultsInfo = document.querySelector('.dict-results-info');
+const catBtns = document.querySelectorAll('.dict-cats__btn');
+let activeCat = '{{ search_cat }}';
+
+function filterCards() {
+    const q = searchInput.value.trim().toLowerCase();
+    let shown = 0;
+    
+    cards.forEach(card => {
+        const term = card.querySelector('.dict-card__term')?.textContent.toLowerCase() || '';
+        const def = card.querySelector('.dict-card__def')?.textContent.toLowerCase() || '';
+        const subtitle = card.querySelector('.dict-card__subtitle')?.textContent.toLowerCase() || '';
+        const cat = card.querySelector('.dict-card__cat-badge')?.textContent.trim() || '';
+        
+        const matchQ = !q || term.includes(q) || def.includes(q) || subtitle.includes(q);
+        const matchCat = !activeCat || cat === activeCat;
+        
+        if (matchQ && matchCat) {
+            card.style.display = '';
+            shown++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Update results info
+    if (q || activeCat) {
+        let msg = `Tìm thấy <strong>${shown}</strong> thuật ngữ`;
+        if (q) msg += ` cho "${searchInput.value.trim()}"`;
+        if (activeCat) msg += ` trong danh mục <strong>${activeCat}</strong>`;
+        resultsInfo.innerHTML = `<p>${msg}</p>`;
+    } else {
+        resultsInfo.innerHTML = '';
+    }
+    
+    // Show/hide empty state
+    const emptyDiv = document.querySelector('.dict-empty');
+    if (emptyDiv) emptyDiv.style.display = shown === 0 ? '' : 'none';
+    
+    // Show/hide clear button
+    const clearBtn = document.querySelector('.dict-search__clear');
+    if (clearBtn) clearBtn.style.display = (q || activeCat) ? '' : 'none';
+}
+
+// Live search on typing (no reload!)
+searchInput?.addEventListener('input', function() {
+    filterCards();
+});
+
+// Enter key also just filters (no submit)
+searchInput?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') e.preventDefault();
+});
+
+// Category filter via JS (no page reload)
+catBtns.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        catBtns.forEach(b => b.classList.remove('dict-cats__btn--active'));
+        this.classList.add('dict-cats__btn--active');
+        
+        // Extract category from button text
+        const btnText = this.textContent.trim();
+        if (btnText.startsWith('Tất cả')) {
+            activeCat = '';
+        } else {
+            activeCat = this.childNodes[0].textContent.trim();
+        }
+        filterCards();
+    });
+});
+
+// Clear button
+document.querySelector('.dict-search__clear')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    searchInput.value = '';
+    activeCat = '';
+    catBtns.forEach(b => b.classList.remove('dict-cats__btn--active'));
+    catBtns[0]?.classList.add('dict-cats__btn--active');
+    filterCards();
+});
+</script>
+{% endblock %}

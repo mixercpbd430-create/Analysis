@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Giáo Trình 42 Phương Pháp Phân Tích{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero__badge">
+        <span class="dot"></span>
+        Đào tạo nội bộ — 42 Phương pháp
+    </div>
+    <h1 class="hero__title">
+        Giáo Trình<br>
+        <span class="gradient-text">42 Phương Pháp Phân Tích</span>
+    </h1>
+    <p class="hero__subtitle">
+        Hệ thống hóa kiến thức về các phương pháp phân tích trong sản xuất, bảo trì và cải tiến liên tục.
+        Mỗi phương pháp bao gồm giải thích, ý nghĩa, mục đích và 20 ví dụ thực tế.
+    </p>
+    <div class="hero__stats">
+        <div class="hero__stat">
+            <div class="hero__stat-number">42</div>
+            <div class="hero__stat-label">Phương pháp</div>
+        </div>
+        <div class="hero__stat">
+            <div class="hero__stat-number">360</div>
+            <div class="hero__stat-label">Ví dụ thực tế</div>
+        </div>
+        <div class="hero__stat">
+            <div class="hero__stat-number">5</div>
+            <div class="hero__stat-label">Pillar TPM</div>
+        </div>
+    </div>
+</section>
+
+{% if error %}
+<div class="error-banner">
+    <p>⚠️ {{ error }}</p>
+</div>
+{% endif %}
+
+<!-- Pillar Filter -->
+<section class="pillars-section">
+    <div class="pillar-tabs" id="pillarTabs">
+        <button class="pillar-tab pillar-tab--active" data-pillar="all">
+            <span class="pillar-tab__icon">📋</span>
+            <span>Tất cả (42)</span>
+        </button>
+        {% for name, info in pillars.items() %}
+        <button class="pillar-tab" data-pillar="{{ name }}" style="--pillar-color: {{ info.color }}">
+            <span class="pillar-tab__icon">{{ info.icon }}</span>
+            <span>{{ name }}</span>
+        </button>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Methods Grid -->
+<section class="chapters-section">
+    <div class="section-header">
+        <h2 class="section-header__title">Danh sách phương pháp phân tích</h2>
+        <p class="section-header__subtitle">Chọn phương pháp để xem chi tiết, ý nghĩa và 20 ví dụ thực tế</p>
+    </div>
+
+    <div class="chapters-grid" id="methodsGrid">
+        {% for m in methods %}
+        <a href="{{ url_for('method', method_id=m.id) }}" class="chapter-card" data-pillar="{{ m.pillar }}" style="animation-delay: {{ loop.index0 * 0.06 }}s">
+            <div class="chapter-card__header">
+                <div class="chapter-card__icon">{{ m.icon }}</div>
+                <span class="pillar-badge" style="--pillar-color: {% if m.pillar == 'Focus Improvement' %}#f97316{% elif m.pillar == 'Early Management' %}#8b5cf6{% elif m.pillar == 'Planned Maintenance' %}#3b82f6{% elif m.pillar == 'Overview' %}#10b981{% else %}#ef4444{% endif %}">{{ m.pillar }}</span>
+            </div>
+            <div class="chapter-card__number">Phương pháp {{ m.id }}</div>
+            <div class="chapter-card__title">{{ m.short_name }}</div>
+            <div class="chapter-card__desc">{{ m.description }}</div>
+            <div class="chapter-card__arrow">Xem chi tiết →</div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

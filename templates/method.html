@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ method.short_name }} — Giáo Trình Phân Tích{% endblock %}
+
+{% block content %}
+<div class="chapter-layout">
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar__title">42 Phương pháp</div>
+        <ul class="sidebar__list">
+            {% for m in methods %}
+            <li>
+                <a href="{{ url_for('method', method_id=m.id) }}"
+                   class="sidebar__link {% if m.id == method.id %}sidebar__link--active{% endif %}">
+                    <span class="sidebar__link-num">{{ m.id }}</span>
+                    <span class="sidebar__link-icon">{{ m.icon }}</span>
+                    <span class="sidebar__link-text">{{ m.short_name }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="chapter-content">
+        <!-- Header -->
+        <div class="chapter-content__header">
+            <span class="chapter-content__badge">
+                {{ method.icon }} Phương pháp {{ method.id }} / 42
+            </span>
+            <span class="pillar-badge pillar-badge--large" style="--pillar-color: {% if method.pillar == 'Focus Improvement' %}#f97316{% elif method.pillar == 'Early Management' %}#8b5cf6{% elif method.pillar == 'Planned Maintenance' %}#3b82f6{% elif method.pillar == 'Overview' %}#10b981{% else %}#ef4444{% endif %}">
+                {{ method.pillar }}
+            </span>
+            <h1 class="chapter-content__title">{{ method.title }}</h1>
+            <p class="chapter-content__desc">{{ method.description }}</p>
+            {% set method_key = 'method_' ~ method.id %}
+            {% if method_key in method_infographics %}
+            <div class="method-infographic">
+                <img src="{{ url_for('static', filename='images/method_infographics/' ~ method_infographics[method_key]) }}"
+                     alt="Infographic: {{ method.title }}" loading="lazy">
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Meaning Section -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-title__icon section-title__icon--theory">📖</span>
+                Giải thích & Ý nghĩa
+            </h2>
+            <div class="content-body">
+                {{ method.meaning | safe }}
+            </div>
+        </div>
+
+        <!-- Purpose Section -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-title__icon section-title__icon--diagram">🎯</span>
+                Mục đích sử dụng
+            </h2>
+            <div class="content-body">
+                {{ method.purpose | safe }}
+            </div>
+        </div>
+
+        <!-- How To Section -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-title__icon section-title__icon--exercise">📝</span>
+                Cách thực hiện
+            </h2>
+            <div class="content-body">
+                {{ method.how_to | safe }}
+            </div>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-title__icon section-title__icon--theory">💡</span>
+                {{ method.examples | length }} Ví dụ phân tích thực tế
+            </h2>
+
+            <div class="examples-grid">
+                {% for ex in method.examples %}
+                <div class="example-card" style="animation-delay: {{ loop.index0 * 0.04 }}s">
+                    <div class="example-card__header" onclick="this.parentElement.classList.toggle('example-card--open')">
+                        <div class="example-card__num">{{ loop.index }}</div>
+                        <div class="example-card__info">
+                            <div class="example-card__title">{{ ex.title }}</div>
+                            <span class="example-card__industry">{{ ex.industry }}</span>
+                        </div>
+                        <div class="example-card__toggle">▼</div>
+                    </div>
+                    <div class="example-card__body">
+                        <div class="example-card__section">
+                            <div class="example-card__label">📋 Tình huống</div>
+                            <p style="white-space: pre-line;">{{ ex.situation }}</p>
+                        </div>
+                        <div class="example-card__section">
+                            <div class="example-card__label">🔍 Phân tích</div>
+                            <p style="white-space: pre-line;">{{ ex.analysis }}</p>
+                        </div>
+                        <div class="example-card__section example-card__section--result">
+                            <div class="example-card__label">✅ Kết quả</div>
+                            <p style="white-space: pre-line;">{{ ex.result }}</p>
+                        </div>
+                        {% set ex_key = 'ex_' ~ (ex_offset + loop.index) %}
+                        {% if ex_key in method_infographics %}
+                        <div class="example-infographic">
+                            <img src="{{ url_for('static', filename='images/method_infographics/' ~ method_infographics[ex_key]) }}"
+                                 alt="Infographic: {{ ex.title }}" loading="lazy">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="chapter-nav">
+            {% if prev_method %}
+            <a href="{{ url_for('method', method_id=prev_method.id) }}" class="chapter-nav__btn chapter-nav__btn--prev">
+                <span class="chapter-nav__dir">← Trước</span>
+                <span class="chapter-nav__name">{{ prev_method.short_name }}</span>
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            {% if next_method %}
+            <a href="{{ url_for('method', method_id=next_method.id) }}" class="chapter-nav__btn chapter-nav__btn--next">
+                <span class="chapter-nav__dir">Tiếp theo →</span>
+                <span class="chapter-nav__name">{{ next_method.short_name }}</span>
+            </a>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}
