@@ -31,7 +31,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        if username == ADMIN_USER and password == ADMIN_PASS:
+        if username.lower() == ADMIN_USER.lower() and password == ADMIN_PASS:
             session['logged_in'] = True
             session['username'] = username
             next_url = request.args.get('next') or url_for('index')
